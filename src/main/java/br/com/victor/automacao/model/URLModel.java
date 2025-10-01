@@ -22,6 +22,10 @@ public class URLModel extends Pesquisa{
         }
 
 
-
     }
+
+    public  String toString (){
+        return getUrl();
+    }
+
 }
