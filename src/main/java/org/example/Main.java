@@ -26,30 +26,12 @@ public class Main {
         URLModel urlModel = new URLModel(cargo,localizacao);
         String urlString = urlModel.getUrl();
 
-        String userProxy = "eqqungmf";
-        String passProxy = "dfov8o2fzsv6";
-        String hostProxy = "142.111.48.253";
-        String proxyPort = "7030";
 
-        System.setProperty("https.proxyHost", hostProxy);
-        System.setProperty("https.proxyPort", proxyPort);
-
-
-        System.setProperty("https.proxyUser", userProxy);
-        System.setProperty("https.proxyPassword", passProxy);
-
-
-        System.setProperty("http.proxyHost", hostProxy);
-        System.setProperty("http.proxyPort", proxyPort);
-        System.setProperty("http.proxyUser", userProxy);
-        System.setProperty("http.proxyPassword", passProxy);
 
         try {
-
            // precisa falar para o servidor que somos um navegador tentando acessar o site;
 
-            Document document = Jsoup.connect(urlString).userAgent("Mozilla/5.0 ;(Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36")
-                    .timeout(2000).get();
+            Document document = Jsoup.connect(urlString).userAgent("Mozilla/5.0 ;(Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36").get();
 
 
             Element tituloHTML = document.selectFirst(".jobTitle.jobTitle-newJob.mosaic-provider-jobcards-bl7gmb.eu4oa1w0");
