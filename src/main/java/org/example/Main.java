@@ -31,18 +31,25 @@ public class Main {
         String hostProxy = "142.111.48.253";
         String proxyPort = "7030";
 
-        System.setProperty("http.proxyUser", userProxy);
-        System.setProperty("http.proxyPassword", userProxy);
+        System.setProperty("https.proxyHost", hostProxy);
+        System.setProperty("https.proxyPort", proxyPort);
+
 
         System.setProperty("https.proxyUser", userProxy);
-        System.setProperty("https.proxyPassword", userProxy);
+        System.setProperty("https.proxyPassword", passProxy);
+
+
+        System.setProperty("http.proxyHost", hostProxy);
+        System.setProperty("http.proxyPort", proxyPort);
+        System.setProperty("http.proxyUser", userProxy);
+        System.setProperty("http.proxyPassword", passProxy);
 
         try {
 
            // precisa falar para o servidor que somos um navegador tentando acessar o site;
 
             Document document = Jsoup.connect(urlString).userAgent("Mozilla/5.0 ;(Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36")
-                    .proxy(hostProxy, Integer.parseInt(proxyPort)).timeout(2000).get();
+                    .timeout(2000).get();
 
 
             Element tituloHTML = document.selectFirst(".jobTitle.jobTitle-newJob.mosaic-provider-jobcards-bl7gmb.eu4oa1w0");
