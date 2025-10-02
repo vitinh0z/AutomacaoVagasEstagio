@@ -6,8 +6,6 @@ import br.com.victor.automacao.model.Vaga;
 import br.com.victor.automacao.services.ScraperSite;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-
 
 
 import java.io.IOException;
@@ -34,31 +32,49 @@ public class Main {
         String urlRemotar = remotarScraper.buscarUrl(cargo,localizacao);
 
 
-
         List<ScraperSite> list = new ArrayList<>();
 
         list.add(new RemotarScraper());
 
-        List<Vaga> todasAsVagas = new ArrayList<>();
+        List<List<Vaga>> todasAsVagas = new ArrayList<>();
 
 
-        for(ScraperSite x : list){
-
+        for(ScraperSite scraper : list){
 
             System.out.println("Buscando Vaga na URL: " + url);
-            url = x.buscarUrl(cargo, localizacao);
+            url = scraper.buscarUrl(cargo, localizacao);
+
         }
 
 
         try {
 
             System.out.println("Conectado com Sucesso na URL: " + url);
-            Connection.Response response = Jsoup.connect(url).userAgent("Mozzila/5.0 Windows NT 10.0; Win64; x64) AppleWebJit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36").ignoreContentType(true).execute();
+            Connection.Response response = Jsoup.connect(url).userAgent("Mozilla/5.0 Windows NT 10.0; Win64; x64) AppleWebJit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36").ignoreContentType(true).execute();
 
+            String jsonResponse = response.body();
+
+            List <Vaga> vagaDoSite = remotarScraper.extrairVagas(jsonResponse);
+
+
+            todasAsVagas.add(vagaDoSite);
+
+
+            System.out.println(todasAsVagas.size() + "Vagas encontrada");
         }
         catch (IOException e){
             System.out.println("Erro ao tentar Conectar a URL: " + urlRemotar + " " + e.getMessage());
             e.printStackTrace();
+        }
+
+        for (List<Vaga> vaga : todasAsVagas){
+            System.out.println(vaga);
+        }
+        if (!todasAsVagas.contains(vaga)){
+            todasAsVagas.add(>);
+        }
+        else {
+
         }
 
 

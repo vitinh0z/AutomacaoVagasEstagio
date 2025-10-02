@@ -6,14 +6,16 @@ public class Vaga {
 
     private String title;
     private String description;
+    private String name;
 
     @SerializedName("externalLink")
     private String link;
 
-    public Vaga(String title, String description, String link) {
+    public Vaga(String title, String description, String link, String name) {
         this.title = title;
         this.description = description;
         this.link = link;
+        this.name = name;
     }
 
     public String getTitle() {
@@ -43,8 +45,16 @@ public class Vaga {
         this.link = link;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
     @Override
     public String toString() {
-        return "Vaga: " + getTitle() + "\n  - Link: " + getLink() + "\n" + "Descrição: " + getDescription();
+        return "Nome: " + getName() + "Vaga: " + getTitle() + "\n  - Link: " + getLink() + "\n" + "Descrição: " + getDescription();
     }
 }
