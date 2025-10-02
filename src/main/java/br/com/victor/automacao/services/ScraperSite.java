@@ -8,4 +8,6 @@ public interface ScraperSite {
     String buscarUrl(String cargo, String localizacao);
 
     List<Vaga> extrairVagas (String jsonResponse);
+
+    List<Vaga> extrairVagas(Document document);
 }

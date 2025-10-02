@@ -12,6 +12,11 @@ public class IndeedScraper implements ScraperSite {
     }
 
     @Override
+    public List<Vaga> extrairVagas(String jsonResponse) {
+        return List.of();
+    }
+
+    @Override
     public List<Vaga> extrairVagas(Document document) {
         return List.of();
     }

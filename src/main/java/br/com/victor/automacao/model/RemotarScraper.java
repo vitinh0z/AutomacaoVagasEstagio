@@ -49,6 +49,11 @@ public class RemotarScraper implements ScraperSite {
 
         return new ArrayList<>();
     }
+
+    @Override
+    public List<Vaga> extrairVagas(Document document) {
+        return List.of();
+    }
 }
 
 
