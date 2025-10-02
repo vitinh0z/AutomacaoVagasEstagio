@@ -1,14 +1,16 @@
 package org.example;
 
 
-import br.com.victor.automacao.model.URLModel;
+import br.com.victor.automacao.model.RemotarScraper;
+import br.com.victor.automacao.model.Vaga;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
+
 
 
 import java.io.IOException;
 
+import java.util.List;
 import java.util.Scanner;
 
 public class Main {
@@ -23,33 +25,36 @@ public class Main {
         System.out.println("Localização da Vaga: ");
         String localizacao = scanner.nextLine();
 
-        URLModel urlModel = new URLModel(cargo,localizacao);
-        String urlString = urlModel.getUrl();
-
+        RemotarScraper remotarScraper = new RemotarScraper();
+        String urlRemotar = remotarScraper.buscarUrl(cargo,localizacao);
 
 
         try {
-           // precisa falar para o servidor que somos um navegador tentando acessar o site;
 
-            Document document = Jsoup.connect(urlString).userAgent("Mozilla/5.0 ;(Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36").get();
+            System.out.println("Tentando conectar na URL: " + urlRemotar);
+            Document document = Jsoup.connect(urlRemotar).userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36").get();
 
+             List<Vaga> vagasEncontradas = remotarScraper.extrairVagas(document);
 
-            Element tituloHTML = document.selectFirst(".jobTitle.jobTitle-newJob.mosaic-provider-jobcards-bl7gmb.eu4oa1w0");
-            if (tituloHTML != null){
-                String titulo = tituloHTML.text();
-                System.out.println(titulo);
-            }
+             if (vagasEncontradas.isEmpty()){
+                 System.out.println("Nenhuma vaga encontrada");
+             }
+             else {
+                 System.out.println("----------------------------");
 
+                 System.out.println(vagasEncontradas.size() + "vagas encontradas");
 
+                 System.out.println("-----------------------------");
+             }
 
-            Element descricaoHTML = document.selectFirst("#jobDescriptionText"); // Descricao da Vaga
-            if (descricaoHTML!= null){
-                String descricao = descricaoHTML.text();
-                System.out.println(descricao);
-            }
+             for (Vaga vaga : vagasEncontradas){
+                 System.out.println(vaga);
+                 System.out.println("------");
+             }
+
 
         }catch (IOException e){
-            System.out.println("Erro ao tentar Conectar a URL: " + urlString + " " + e.getMessage());
+            System.out.println("Erro ao tentar Conectar a URL: " + urlRemotar + " " + e.getMessage());
         }
 
 
