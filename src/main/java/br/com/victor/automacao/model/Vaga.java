@@ -53,8 +53,11 @@ public class Vaga {
         this.name = name;
     }
 
+
+
+
     @Override
     public String toString() {
-        return "Nome: " + getName() + "Vaga: " + getTitle() + "\n  - Link: " + getLink() + "\n" + "Descrição: " + getDescription();
+        return "\n - Vaga: " + getTitle() + "\n  - Link: " + getLink() + "\n - Descrição: \n" + getDescription();
     }
 }
