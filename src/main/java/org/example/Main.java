@@ -10,9 +10,7 @@ import org.jsoup.Jsoup;
 
 import java.io.IOException;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 public class Main {
 
@@ -44,6 +42,10 @@ public class Main {
             System.out.println("Buscando Vaga na URL: " + url);
             url = scraper.buscarUrl(cargo, localizacao);
 
+            if (url == null || url.isEmpty()){
+                System.out.println("URL NÂO ENCONTRADA: " +  scraper.getClass());
+                continue;
+            }
         }
 
 
@@ -66,6 +68,9 @@ public class Main {
             System.out.println("Erro ao tentar Conectar a URL: " + urlRemotar + " " + e.getMessage());
             e.printStackTrace();
         }
+
+        Set<string> vagaVistas = new HashSet<>();
+        List<Vaga> vagaUnicas = new todasAsVagas.stream().filter(vaga )
 
         for (List<Vaga> vaga : todasAsVagas){
             System.out.println(vaga);
