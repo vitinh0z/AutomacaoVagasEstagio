@@ -21,9 +21,9 @@ public class RemotarScraper implements ScraperSite {
     }
 
         @Override
-        public String buscarUrl (String cargo, String localizacao) {
+        public String buscarUrl (String cargos, String localizacao) {
         try {
-            String cargoCodificado = URLEncoder.encode(cargo, StandardCharsets.UTF_8.name());
+            String cargoCodificado = URLEncoder.encode(cargos, StandardCharsets.UTF_8.name());
 
             return String.format("https://api.remotar.com.br/jobs?search=%s", cargoCodificado);
         }catch (UnsupportedEncodingException e){

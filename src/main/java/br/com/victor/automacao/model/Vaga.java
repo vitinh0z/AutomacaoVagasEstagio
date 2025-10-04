@@ -58,6 +58,6 @@ public class Vaga {
 
     @Override
     public String toString() {
-        return "\n - Vaga: " + getTitle() + "\n  - Link: " + getLink() + "\n - Descrição: \n" + getDescription();
+        return "\n - Vaga: " + getTitle() + "\n  - Link: " + getLink() + "\n - Descrição: " + getDescription();
     }
 }
