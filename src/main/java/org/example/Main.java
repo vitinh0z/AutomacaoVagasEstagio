@@ -8,123 +8,162 @@ import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.text.Normalizer;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Main {
 
+
     public static final String DISCORD_URL = "https://discord.com/api/webhooks/1424145095006883911/N5i7Qpesg98pKAmkDsgrPDs73zxTTKf1KzgIZGqUPwYx6_CRRZzRzwqh7RO167JlSuO2";
+    private static final String ARQUIVO_VAGAS_ENVIADAS = "vagas_enviadas.txt";
+    private static final long INTERVALO_ENTRE_VAGAS_MS = 4 * 60 * 1000; // 4 minutos
 
     public static void main(String[] args) {
+        Queue<Vaga> filaDeVagasParaEnviar = new LinkedList<>();
+        EnviarNotificaoDiscord notifier = new EnviarNotificaoDiscord(DISCORD_URL);
+
+        while (true) {
+            if (filaDeVagasParaEnviar.isEmpty()) {
+
+                System.out.println("Fila vazia. Buscando por novas vagas... - " + agora());
 
 
+                Set<String> linksJaEnviados = carregarLinksEnviados();
+                List<Vaga> vagasUnicas = buscarTodasAsVagas();
 
-        Scanner scanner = new Scanner(System.in);
+                List<Vaga> vagasNovas = vagasUnicas.stream()
+                        .filter(vaga -> !linksJaEnviados.contains(vaga.getLink()))
+                        .collect(Collectors.toList());
 
-        List<String> cargos = Arrays.asList("Estagio Java", "Estagio Desenvolvedor BackEnd", "Estagio Desenvolvedor de Software", "Estagio TI");
-
-
-        String localizacao = "";
-
-        EnviarNotificaoDiscord enviarNotificaoDiscord = new EnviarNotificaoDiscord(DISCORD_URL);
-
-        List<ScraperSite> scrapers = new ArrayList<>();
-        scrapers.add(new RemotarScraper());
-
-        List<Vaga> todasAsVagas = new ArrayList<>();
-        for (String cargo : cargos) {
-            System.out.println("Buscando pelo Cargo: " + cargos);
-
-            for (ScraperSite scraper : scrapers) {
-                String siteName = scraper.getClass().getSimpleName();
-                System.out.println("\n--- Buscando vagas no site: " + siteName + " ---");
-
-                String url = scraper.buscarUrl(cargo, localizacao);
-
-                if (url == null || url.isEmpty()) {
-                    System.out.println("URL não encontrada para " + siteName);
-                    continue;
+                if (vagasNovas.isEmpty()) {
+                    System.out.println("Nenhuma vaga nova encontrada. Aguardando para buscar novamente...");
+                } else {
+                    filaDeVagasParaEnviar.addAll(vagasNovas);
+                    System.out.println(vagasNovas.size() + " novas vagas foram adicionadas à fila de envio.");
                 }
+            }
 
-                System.out.println("Conectando à URL: " + url);
+            if (!filaDeVagasParaEnviar.isEmpty()) {
+                Vaga vagaParaEnviar = filaDeVagasParaEnviar.poll();
 
-                try {
-                    Connection.Response response = Jsoup.connect(url)
-                            .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36")
-                            .ignoreContentType(true)
-                            .execute();
+                System.out.println("\n[" + agora() + "] Enviando próxima vaga da fila para o Discord: " + vagaParaEnviar.getTitle());
+                notifier.notificar(vagaParaEnviar);
+                salvarLinkEnviado(vagaParaEnviar.getLink()); // Salva na "memória"
 
-                    String jsonResponse = response.body();
+                System.out.println("Vaga enviada. " + filaDeVagasParaEnviar.size() + " vagas restantes na fila.");
 
-                    List<Vaga> vagasDoSite = scraper.extrairVagas(jsonResponse);
-
-                    if (vagasDoSite != null && !vagasDoSite.isEmpty()) {
-                        System.out.println(vagasDoSite.size() + " vagas encontradas em " + siteName);
-
-                        List<Vaga> vagasFiltradas = filtrarVagas(vagasDoSite, cargo);
-
-                        todasAsVagas.addAll(vagasFiltradas);
-
-                    } else {
-                        System.out.println("Nenhuma vaga encontrada em " + siteName);
-                    }
-
-                } catch (IOException e) {
-                    System.out.println("Erro ao tentar conectar à URL para " + siteName + ": " + url);
-                    System.err.println("Detalhes do erro: " + e.getMessage());
+                if (filaDeVagasParaEnviar.isEmpty()){
+                    System.out.println("Lista Terminada. Todas Vagas foram enviadas");
                 }
+            }
+
+            try {
+                System.out.println("Próxima ação em 4 minutos...");
+                Thread.sleep(INTERVALO_ENTRE_VAGAS_MS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
             }
         }
-
-
-            System.out.println("\n--- Processamento concluído ---");
-            System.out.println("Total de vagas encontradas (com duplicatas): " + todasAsVagas.size());
-
-            Set<Vaga> vagasUnicasSet = new LinkedHashSet<>(todasAsVagas);
-            List<Vaga> vagasUnicas = new ArrayList<>(vagasUnicasSet);
-
-            System.out.println("Total de vagas únicas: " + vagasUnicas.size());
-
-            System.out.println("\n--- Lista de Vagas Únicas ---");
-            if (vagasUnicas.isEmpty()) {
-                System.out.println("Nenhuma vaga foi encontrada com os critérios informados.");
-            } else {
-
-                System.out.println("Enviando para o dicord");
-
-                for (Vaga vaga : vagasUnicas){
-                    System.out.println("Enviando vaga " + vaga.getTitle());
-                    enviarNotificaoDiscord.notificar(vaga);
-
-                }
-                System.out.println("notificao enviadas com sucesso");
-
-
-            }
     }
 
 
-    public static List<Vaga> filtrarVagas (List<Vaga> vagas, String cargo){
+    private static List<Vaga> buscarTodasAsVagas() {
+        List<String> cargos = Arrays.asList("Estagio Java", "Estagio Desenvolvedor BackEnd", "Estagio Desenvolvedor de Software", "Estagio TI", "Desenvolvedor BackEnd", "Desenvolvedor FrontEnd", "Desenvolvedor FullStack", "Desenvolvedor");
+        List<ScraperSite> scrapers = new ArrayList<>();
+        scrapers.add(new RemotarScraper());
+        List<Vaga> todasAsVagas = new ArrayList<>();
+
+        for (String cargo : cargos) {
+            System.out.println("Buscando por: '" + cargo + "'");
+
+            for (ScraperSite scraper : scrapers) {
+                String url = scraper.buscarUrl(cargo, "");
+                if (url == null || url.isEmpty()) continue;
+                try {
+                    Connection.Response response = Jsoup.connect(url).userAgent("Mozilla/5.0").ignoreContentType(true).execute();
+                    String jsonResponse = response.body();
+
+                    List<Vaga> vagasDoSite = scraper.extrairVagas(jsonResponse);
+                    if (vagasDoSite != null && !vagasDoSite.isEmpty()) {
+                        System.out.println("\n>>>>>> Vagas recebidas antes do filtro: " + vagasDoSite.size());
+                        List<Vaga> vagasFiltradas = filtrarVagas(vagasDoSite, cargo);
+                        System.out.println("\n>>>>>> Vagas que passaram no filtro: " + vagasFiltradas.size());
+                        todasAsVagas.addAll(vagasFiltradas);
+                    }
+                } catch (IOException e) {
+                    System.err.println("Erro ao buscar vagas para " + cargo + ": " + e.getMessage());
+                }
+            }
+        }
+        return new ArrayList<>(new LinkedHashSet<>(todasAsVagas));
+    }
+
+
+    private static String normalizarString(String texto) {
+        if (texto == null) {
+            return "";
+        }
+
+        String textoNormalizado = texto.toLowerCase();
+
+        textoNormalizado = Normalizer.normalize(textoNormalizado, Normalizer.Form.NFD);
+        textoNormalizado = textoNormalizado.replaceAll("[\\p{InCombiningDiacriticalMarks}]", "");
+        return textoNormalizado;
+    }
+
+    public static List<Vaga> filtrarVagas(List<Vaga> vagas, String cargo) {
         List<Vaga> vagasFiltradas = new ArrayList<>();
-        String[] palavrasChave = cargo.toLowerCase().split(" ");
 
-        for (Vaga vaga : vagas){
-            String tituloVaga = vaga.getTitle().toLowerCase();
-            boolean contemPalavra = true;
+        String[] palavrasChave = normalizarString(cargo).split(" ");
 
-            for (String palavra : palavrasChave){
-                if (!tituloVaga.contains(palavra)){
-                    contemPalavra = false;
+        for (Vaga vaga : vagas) {
+            if (vaga.getTitle() == null) continue;
+
+            // Normaliza o título da vaga antes de comparar
+            String tituloVaga = normalizarString(vaga.getTitle());
+
+
+            boolean contemTodas = true;
+            for (String palavra : palavrasChave) {
+                if (!tituloVaga.contains(palavra)) {
+                    contemTodas = false;
                     break;
-
                 }
             }
 
-            if (contemPalavra){
+            if (contemTodas) {
                 vagasFiltradas.add(vaga);
             }
-
         }
         return vagasFiltradas;
     }
 
+
+
+    private static Set<String> carregarLinksEnviados() {
+        try {
+            return new HashSet<>(Files.readAllLines(Paths.get(ARQUIVO_VAGAS_ENVIADAS)));
+        } catch (IOException e) {
+            return new HashSet<>();
+        }
+    }
+
+    private static void salvarLinkEnviado(String link) {
+        try {
+            Files.write(Paths.get(ARQUIVO_VAGAS_ENVIADAS), (link + System.lineSeparator()).getBytes(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static String agora() {
+        return LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+    }
 }

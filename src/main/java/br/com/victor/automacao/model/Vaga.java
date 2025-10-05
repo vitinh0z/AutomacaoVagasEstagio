@@ -1,6 +1,7 @@
 package br.com.victor.automacao.model;
 
 import com.google.gson.annotations.SerializedName;
+import org.jetbrains.annotations.NotNull;
 
 public class Vaga {
 
@@ -9,7 +10,8 @@ public class Vaga {
     private String name;
 
     @SerializedName("externalLink")
-    private String link;
+
+    private @NotNull String link;
 
     public Vaga(String title, String description, String link, String name) {
         this.title = title;
