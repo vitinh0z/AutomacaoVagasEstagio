@@ -20,13 +20,18 @@ import java.util.stream.Collectors;
 public class Main {
 
 
-    public static final String DISCORD_URL = "https://discord.com/api/webhooks/1424145095006883911/N5i7Qpesg98pKAmkDsgrPDs73zxTTKf1KzgIZGqUPwYx6_CRRZzRzwqh7RO167JlSuO2";
-    private static final String ARQUIVO_VAGAS_ENVIADAS = "vagas_enviadas.txt";
+    private static final String ARQUIVO_VAGAS_ENVIADAS = "/var/data/vagas_enviadas.txt";
     private static final long INTERVALO_ENTRE_VAGAS_MS = 4 * 60 * 1000; // 4 minutos
 
     public static void main(String[] args) {
+
+        String discordUrl = System.getenv("DISCORD_URL");
+        if (discordUrl== null || discordUrl.isEmpty()){
+            System.err.println("Erro: A variavel de ambeinte DISCORD_URL NÃO FOI ENCONTRADA");
+            return;
+        }
         Queue<Vaga> filaDeVagasParaEnviar = new LinkedList<>();
-        EnviarNotificaoDiscord notifier = new EnviarNotificaoDiscord(DISCORD_URL);
+        EnviarNotificaoDiscord notifier = new EnviarNotificaoDiscord(discordUrl);
 
         while (true) {
             if (filaDeVagasParaEnviar.isEmpty()) {
@@ -38,6 +43,7 @@ public class Main {
                 List<Vaga> vagasUnicas = buscarTodasAsVagas();
 
                 List<Vaga> vagasNovas = vagasUnicas.stream()
+                        .filter(vaga -> vaga.getLink() != null && !vaga.getLink().isEmpty())
                         .filter(vaga -> !linksJaEnviados.contains(vaga.getLink()))
                         .collect(Collectors.toList());
 
@@ -51,13 +57,15 @@ public class Main {
 
             if (!filaDeVagasParaEnviar.isEmpty()) {
                 Vaga vagaParaEnviar = filaDeVagasParaEnviar.poll();
+                if (vagaParaEnviar != null && vagaParaEnviar.getLink() != null && !vagaParaEnviar.getLink().isEmpty()) {
+                    System.out.println("\n[" + agora() + "] Enviando próxima vaga da fila para o Discord: " + vagaParaEnviar.getTitle());
+                    notifier.notificar(vagaParaEnviar);
+                    salvarLinkEnviado(vagaParaEnviar.getLink()); // Salva na "memória"
 
-                System.out.println("\n[" + agora() + "] Enviando próxima vaga da fila para o Discord: " + vagaParaEnviar.getTitle());
-                notifier.notificar(vagaParaEnviar);
-                salvarLinkEnviado(vagaParaEnviar.getLink()); // Salva na "memória"
-
-                System.out.println("Vaga enviada. " + filaDeVagasParaEnviar.size() + " vagas restantes na fila.");
-
+                    System.out.println("Vaga enviada. " + filaDeVagasParaEnviar.size() + " vagas restantes na fila.");
+                } else {
+                    System.out.println("\n[" + agora() + "] Vaga Invalida (sem link");
+                }
                 if (filaDeVagasParaEnviar.isEmpty()){
                     System.out.println("Lista Terminada. Todas Vagas foram enviadas");
                 }
@@ -114,7 +122,7 @@ public class Main {
         String textoNormalizado = texto.toLowerCase();
 
         textoNormalizado = Normalizer.normalize(textoNormalizado, Normalizer.Form.NFD);
-        textoNormalizado = textoNormalizado.replaceAll("[\\p{InCombiningDiacriticalMarks}]", "");
+        textoNormalizado = textoNormalizado.replaceAll("\\p{InCombiningDiacriticalMarks}", "");
         return textoNormalizado;
     }
 
@@ -124,7 +132,7 @@ public class Main {
         String[] palavrasChave = normalizarString(cargo).split(" ");
 
         for (Vaga vaga : vagas) {
-            if (vaga.getTitle() == null) continue;
+            if (vaga.getTitle() == null || vaga.getLink() == null || vaga.getLink().isEmpty()) continue;
 
             // Normaliza o título da vaga antes de comparar
             String tituloVaga = normalizarString(vaga.getTitle());
