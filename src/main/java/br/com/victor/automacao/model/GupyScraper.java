@@ -2,9 +2,11 @@ package br.com.victor.automacao.model;
 
 import br.com.victor.automacao.services.ScraperSite;
 import com.google.gson.Gson;
-import org.jsoup.helper.HttpConnection;
 import org.jsoup.nodes.Document;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,10 +16,24 @@ public class GupyScraper implements ScraperSite {
         List<Vaga> data;
     }
 
+
     @Override
     public String buscarUrl(String cargo, String localizacao) {
-        return String.format("https://employability-portal.gupy.io/api/v1/jobs?jobName=%s&limit=10&offset=0", cargo, localizacao);
+        try {
+
+            String cargoCodificado = URLEncoder.encode(cargo, StandardCharsets.UTF_8.name());
+        
+            return String.format("https://employability-portal.gupy.io/api/v1/jobs?jobName=%s&offset=0", cargoCodificado);
+
+        } catch (UnsupportedEncodingException e){
+
+            System.out.println("erro ao tentar codificar a URL " + e.getMessage());
+            return"";
+        }
     }
+
+
+
 
     @Override
     public List<Vaga> extrairVagas(String jsonResponse) {
@@ -46,6 +62,7 @@ public class GupyScraper implements ScraperSite {
 
 
 }
+
 
 
 
