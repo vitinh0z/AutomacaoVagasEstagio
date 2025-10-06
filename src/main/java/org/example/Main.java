@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 public class Main {
 
 
-    private static final String ARQUIVO_VAGAS_ENVIADAS = "vagas_enviadas.txt";
+    private static final String ARQUIVO_VAGAS_ENVIADAS = "var/data/vagas_enviadas.txt";
     private static final long INTERVALO_ENTRE_VAGAS_MS = 4 * 60 * 1000; // 4 minutos
 
     public static void main(String[] args) {
