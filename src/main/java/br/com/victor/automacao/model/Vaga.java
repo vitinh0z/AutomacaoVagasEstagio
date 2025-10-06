@@ -1,7 +1,7 @@
 package br.com.victor.automacao.model;
 
 import com.google.gson.annotations.SerializedName;
-import org.jetbrains.annotations.NotNull;
+
 
 import java.util.Objects;
 
@@ -12,7 +12,6 @@ public class Vaga {
     private String name;
 
     @SerializedName("externalLink")
-
     private String link;
 
     public Vaga(String title, String description, String link, String name) {
@@ -67,8 +66,6 @@ public class Vaga {
     public void setName(String name) {
         this.name = name;
     }
-
-
 
 
     @Override
