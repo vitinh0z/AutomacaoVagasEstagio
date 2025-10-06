@@ -1,6 +1,7 @@
 package org.example;
 
 import br.com.victor.automacao.model.EnviarNotificaoDiscord;
+import br.com.victor.automacao.model.GupyScraper;
 import br.com.victor.automacao.model.RemotarScraper;
 import br.com.victor.automacao.model.Vaga;
 import br.com.victor.automacao.services.ScraperSite;
@@ -57,6 +58,7 @@ public class Main {
 
             if (!filaDeVagasParaEnviar.isEmpty()) {
                 Vaga vagaParaEnviar = filaDeVagasParaEnviar.poll();
+
                 if (vagaParaEnviar != null && vagaParaEnviar.getLink() != null && !vagaParaEnviar.getLink().isEmpty()) {
                     System.out.println("\n[" + agora() + "] Enviando próxima vaga da fila para o Discord: " + vagaParaEnviar.getTitle());
                     notifier.notificar(vagaParaEnviar);
@@ -83,9 +85,41 @@ public class Main {
 
 
     private static List<Vaga> buscarTodasAsVagas() {
-        List<String> cargos = Arrays.asList("Estagio Java", "Estagio Desenvolvedor BackEnd", "Estagio Desenvolvedor de Software", "Estagio TI", "Desenvolvedor BackEnd", "Desenvolvedor FrontEnd", "Desenvolvedor FullStack", "Desenvolvedor");
+
+        List<String> cargos = Arrays.asList("Estágio em Desenvolvimento de Software",
+                "Estágio em Programação Back-End",
+                "Estágio em Engenharia de Software",
+                "Estágio em Ciência da Computação",
+                "Estágio em Análise e Desenvolvimento de Sistemas",
+                "Estágio em Desenvolvimento Web",
+                "Estágio em Suporte Técnico em TI",
+                "Estágio em Infraestrutura de Redes",
+                "Estágio em Banco de Dados",
+                "Estágio em Automação de Testes",
+                "Estágio em DevOps",
+                "Estágio em Segurança da Informação",
+                "Estágio em Desenvolvimento Mobile",
+                "Estágio em Tecnologia da Informação",
+                "Estágio em Full Stack Development",
+
+                "Trainee em Desenvolvimento de Software",
+                "Trainee Desenvolvedor Java",
+                "Trainee Back-End Developer",
+                "Trainee em Engenharia de Software",
+                "Trainee em Infraestrutura de TI",
+                "Trainee em Cloud Computing",
+                "Trainee em Análise de Sistemas",
+                "Trainee Full Stack Developer",
+                "Trainee em Cybersegurança",
+                "Trainee em Ciência de Dados",
+                "Trainee em Automação e QA",
+                "Trainee em Desenvolvimento de Aplicações Web",
+                "Trainee em TI");
+
         List<ScraperSite> scrapers = new ArrayList<>();
         scrapers.add(new RemotarScraper());
+        scrapers.add(new GupyScraper());
+
         List<Vaga> todasAsVagas = new ArrayList<>();
 
         for (String cargo : cargos) {

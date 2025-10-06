@@ -11,7 +11,7 @@ public class Vaga {
     private String description;
     private String name;
 
-    @SerializedName("externalLink")
+    @SerializedName(value = "externalLink", alternate = {"jobUrl"})
     private String link;
 
     public Vaga(String title, String description, String link, String name) {
@@ -20,6 +20,7 @@ public class Vaga {
         this.link = link;
         this.name = name;
     }
+
     @Override
     public boolean equals(Object o){
         if (this == o) return  true;
