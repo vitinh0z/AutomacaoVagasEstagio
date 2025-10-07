@@ -163,7 +163,11 @@ public class Main {
     public static List<Vaga> filtrarVagas(List<Vaga> vagas, String cargo) {
         List<Vaga> vagasFiltradas = new ArrayList<>();
 
-        String[] palavrasChave = normalizarString(cargo).split(" ");
+        List<String> palavrasIgnoradas = Arrays.asList("em", "de", "da", "do", "para", "a", "o");
+
+        String[] palavrasChave = Arrays.stream(normalizarString(cargo).split(" ")).
+                filter(palavra -> !palavrasIgnoradas.contains(palavra)).
+                toArray(String[]::new);
 
         for (Vaga vaga : vagas) {
             if (vaga.getTitle() == null || vaga.getLink() == null || vaga.getLink().isEmpty()) continue;
