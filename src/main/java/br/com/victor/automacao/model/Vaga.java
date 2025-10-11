@@ -6,7 +6,7 @@ import com.google.gson.annotations.SerializedName;
 import java.util.Objects;
 
 public class Vaga {
-    @SerializedName("name")
+    @SerializedName(value = "title", alternate = {"name"})
     private String title;
     private String description;
     private String name;
@@ -43,6 +43,7 @@ public class Vaga {
 
     public String getDescription() {
         if (description != null){
+
             return org.jsoup.Jsoup.parse(description).text();
         }
         return "Descricao Não Fornecida";

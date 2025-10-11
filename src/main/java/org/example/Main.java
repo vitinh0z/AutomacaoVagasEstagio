@@ -134,42 +134,20 @@ public class Main {
             for (ScraperSite scraper : scrapers) {
                 String url = scraper.buscarUrl(cargo, "");
                 if (url == null || url.isEmpty()) continue;
-                // Dentro do método buscarTodasAsVagas(), substitua o bloco try-catch existente por este:
-
                 try {
-                    Connection.Response response = Jsoup.connect(url)
-                            .userAgent("Mozilla/5.0")
-                            .ignoreContentType(true)
-                            .execute();
-
-                    int statusCode = response.statusCode();
+                    Connection.Response response = Jsoup.connect(url).userAgent("Mozilla/5.0")
+                            .ignoreContentType(true).execute();
                     String jsonResponse = response.body();
 
-                    // --- LOGS DE DIAGNÓSTICO ADICIONADOS ---
-                    System.out.println("\n----------------------------------------------------");
-                    System.out.println("Buscando por: '" + cargo + "'");
-                    System.out.println("URL: " + url);
-                    System.out.println("Status da Resposta HTTP: " + statusCode);
-                    System.out.println("JSON Recebido (primeiros 500 caracteres): " +
-                            (jsonResponse.length() > 500 ? jsonResponse.substring(0, 500) + "..." : jsonResponse));
-                    System.out.println("----------------------------------------------------");
-                    // --- FIM DOS LOGS DE DIAGNÓSTICO ---
-
-
-                    if (statusCode == 200) { // Só processa se a requisição foi um sucesso
-                        List<Vaga> vagasDoSite = scraper.extrairVagas(jsonResponse);
-                        if (vagasDoSite != null && !vagasDoSite.isEmpty()) {
-                            System.out.println(">>>>>> Vagas recebidas antes do filtro: " + vagasDoSite.size());
-                            List<Vaga> vagasFiltradas = filtrarVagas(vagasDoSite, cargo);
-                            System.out.println(">>>>>> Vagas que passaram no filtro: " + vagasFiltradas.size());
-                            todasAsVagas.addAll(vagasFiltradas);
-                        }
-                    } else {
-                        System.err.println("Erro: A API retornou um status diferente de 200. Não foi possível processar as vagas.");
+                    List<Vaga> vagasDoSite = scraper.extrairVagas(jsonResponse);
+                    if (vagasDoSite != null && !vagasDoSite.isEmpty()) {
+                        System.out.println("\n>>>>>> Vagas recebidas antes do filtro: " + vagasDoSite.size());
+                        List<Vaga> vagasFiltradas = filtrarVagas(vagasDoSite, cargo);
+                        System.out.println("\n>>>>>> Vagas que passaram no filtro: " + vagasFiltradas.size());
+                        todasAsVagas.addAll(vagasFiltradas);
                     }
-
                 } catch (IOException e) {
-                    System.err.println("Erro de IO ao buscar vagas para " + cargo + ": " + e.getMessage());
+                    System.err.println("Erro ao buscar vagas para " + cargo + ": " + e.getMessage());
                 }
             }
         }
