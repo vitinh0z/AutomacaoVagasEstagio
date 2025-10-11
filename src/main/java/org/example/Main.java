@@ -169,6 +169,9 @@ public class Main {
                 filter(palavra -> !palavrasIgnoradas.contains(palavra)).
                 toArray(String[]::new);
 
+
+        int minimoDePalavrasCorrespondentes = palavrasChave.length >= 3 ? 2 : palavrasChave.length;
+
         for (Vaga vaga : vagas) {
             if (vaga.getTitle() == null || vaga.getLink() == null || vaga.getLink().isEmpty()) continue;
 
@@ -176,15 +179,14 @@ public class Main {
             String tituloVaga = normalizarString(vaga.getTitle());
 
 
-            boolean contemTodas = true;
+            int palavrasCorrespondes = 0;
             for (String palavra : palavrasChave) {
                 if (!tituloVaga.contains(palavra)) {
-                    contemTodas = false;
-                    break;
+                    palavrasCorrespondes++;
                 }
             }
 
-            if (contemTodas) {
+            if (palavrasCorrespondes >= minimoDePalavrasCorrespondentes) {
                 vagasFiltradas.add(vaga);
             }
         }
