@@ -6,7 +6,7 @@ import com.google.gson.annotations.SerializedName;
 import java.util.Objects;
 
 public class Vaga {
-
+    @SerializedName("name")
     private String title;
     private String description;
     private String name;

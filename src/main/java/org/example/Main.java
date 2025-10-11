@@ -59,8 +59,10 @@ public class Main {
             if (!filaDeVagasParaEnviar.isEmpty()) {
                 Vaga vagaParaEnviar = filaDeVagasParaEnviar.poll();
 
-                if (vagaParaEnviar != null && vagaParaEnviar.getLink() != null && !vagaParaEnviar.getLink().isEmpty()) {
-                    System.out.println("\n[" + agora() + "] Enviando próxima vaga da fila para o Discord: " + vagaParaEnviar.getTitle());
+                if (vagaParaEnviar != null && vagaParaEnviar.getLink() != null && !vagaParaEnviar.getLink()
+                        .isEmpty()) {
+                    System.out.println("\n[" + agora() + "] Enviando próxima vaga da fila para o Discord: "
+                            + vagaParaEnviar.getTitle());
                     notifier.notificar(vagaParaEnviar);
                     salvarLinkEnviado(vagaParaEnviar.getLink()); // Salva na "memória"
 
@@ -133,7 +135,8 @@ public class Main {
                 String url = scraper.buscarUrl(cargo, "");
                 if (url == null || url.isEmpty()) continue;
                 try {
-                    Connection.Response response = Jsoup.connect(url).userAgent("Mozilla/5.0").ignoreContentType(true).execute();
+                    Connection.Response response = Jsoup.connect(url).userAgent("Mozilla/5.0")
+                            .ignoreContentType(true).execute();
                     String jsonResponse = response.body();
 
                     List<Vaga> vagasDoSite = scraper.extrairVagas(jsonResponse);
