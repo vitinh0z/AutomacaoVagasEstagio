@@ -163,14 +163,14 @@ public class Main {
     public static List<Vaga> filtrarVagas(List<Vaga> vagas, String cargo) {
         List<Vaga> vagasFiltradas = new ArrayList<>();
 
+        List<String> nivelSenioridadeExcluidas = Arrays.asList("senior", "pleno", "lead", "especialista", "analista", "junior");
+
         List<String> palavrasIgnoradas = Arrays.asList("em", "de", "da", "do", "para", "a", "o");
 
         String[] palavrasChave = Arrays.stream(normalizarString(cargo).split(" ")).
-                filter(palavra -> !palavrasIgnoradas.contains(palavra)).
+                filter(palavra -> !palavrasIgnoradas.contains(palavra) && !palavra.equals("estagio") && !palavra.equals("trainee")).
                 toArray(String[]::new);
 
-
-        int minimoDePalavrasCorrespondentes = palavrasChave.length >= 3 ? 2 : palavrasChave.length;
 
         for (Vaga vaga : vagas) {
             if (vaga.getTitle() == null || vaga.getLink() == null || vaga.getLink().isEmpty()) continue;
@@ -179,14 +179,31 @@ public class Main {
             String tituloVaga = normalizarString(vaga.getTitle());
 
 
-            int palavrasCorrespondes = 0;
-            for (String palavra : palavrasChave) {
-                if (!tituloVaga.contains(palavra)) {
-                    palavrasCorrespondes++;
+            boolean temSenioridadeIndesejada = false;
+            for (String senioridade : nivelSenioridadeExcluidas) {
+                if (!tituloVaga.contains(senioridade)) {
+                    temSenioridadeIndesejada = true;
+                    break;
                 }
             }
 
-            if (palavrasCorrespondes >= minimoDePalavrasCorrespondentes) {
+            if (temSenioridadeIndesejada) {
+                continue;
+            }
+
+            if (palavrasChave.length == 0){
+                vagasFiltradas.add(vaga);
+                continue;
+            }
+            int palavrasCorrespondentes = 0;
+            for (String palavra : palavrasChave){
+                if (tituloVaga.contains(palavra)){
+                    palavrasCorrespondentes++;
+                }
+            }
+            int minimodePalavra = (palavrasChave.length > 1) ? palavrasChave.length - 1 : 1;
+
+            if (palavrasCorrespondentes >= minimodePalavra){
                 vagasFiltradas.add(vaga);
             }
         }
