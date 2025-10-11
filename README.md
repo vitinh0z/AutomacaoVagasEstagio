@@ -43,7 +43,7 @@ O projeto está configurado no `fly.toml` para utilizar um volume persistente mo
 
 1.  Clone o repositório:
     ```bash
-    git clone <URL-DO-SEU-REPOSITORIO>
+    git clone https://github.com/vitinh0z/AutomacaoVagasEstagio.git
     ```
 2.  Navegue até o diretório do projeto:
     ```bash
