@@ -102,6 +102,9 @@ public class Main {
                 "Estágio em Tecnologia da Informação",
                 "Estágio em Full Stack Development",
                 "Estagio em Front-End",
+                "Desenvolvedor Back-End",
+                "Desenvolvedor Java",
+
 
                 "Trainee em Desenvolvimento de Software",
                 "Trainee Desenvolvedor Java",
