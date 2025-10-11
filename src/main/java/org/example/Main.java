@@ -101,6 +101,7 @@ public class Main {
                 "Estágio em Desenvolvimento Mobile",
                 "Estágio em Tecnologia da Informação",
                 "Estágio em Full Stack Development",
+                "Estagio em Front-End",
 
                 "Trainee em Desenvolvimento de Software",
                 "Trainee Desenvolvedor Java",
@@ -168,7 +169,7 @@ public class Main {
         List<String> palavrasIgnoradas = Arrays.asList("em", "de", "da", "do", "para", "a", "o");
 
         String[] palavrasChave = Arrays.stream(normalizarString(cargo).split(" ")).
-                filter(palavra -> !palavrasIgnoradas.contains(palavra) && !palavra.equals("estagio") && !palavra.equals("trainee")).
+                filter(palavra -> !palavrasIgnoradas.contains(palavra) && !palavra.equals("estagio") || !palavra.equals("Estagio") && !palavra.equals("trainee") || !palavra.equals("Trainee")).
                 toArray(String[]::new);
 
 
