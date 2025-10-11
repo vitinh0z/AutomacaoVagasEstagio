@@ -1,24 +1,19 @@
 package br.com.victor.automacao.model;
 
 import com.google.gson.annotations.SerializedName;
-
-
 import java.util.Objects;
 
 public class Vaga {
+
     @SerializedName(value = "title", alternate = {"name"})
     private String title;
+
     private String description;
-    private String name;
 
     @SerializedName(value = "externalLink", alternate = {"jobUrl"})
     private String link;
 
-    public Vaga(String title, String description, String link, String name) {
-        this.title = title;
-        this.description = description;
-        this.link = link;
-        this.name = name;
+    public Vaga() {
     }
 
     @Override
@@ -29,6 +24,7 @@ public class Vaga {
         return  Objects.equals(link, vaga.link);
     }
 
+    @Override
     public int hashCode(){
         return Objects.hash(link);
     }
@@ -43,7 +39,6 @@ public class Vaga {
 
     public String getDescription() {
         if (description != null){
-
             return org.jsoup.Jsoup.parse(description).text();
         }
         return "Descricao Não Fornecida";
@@ -60,15 +55,6 @@ public class Vaga {
     public void setLink(String link) {
         this.link = link;
     }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
 
     @Override
     public String toString() {
