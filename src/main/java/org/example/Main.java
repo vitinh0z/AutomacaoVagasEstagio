@@ -2,7 +2,6 @@ package org.example;
 
 import br.com.victor.automacao.model.EnviarNotificaoDiscord;
 import br.com.victor.automacao.model.GupyScraper;
-import br.com.victor.automacao.model.RemotarScraper;
 import br.com.victor.automacao.model.Vaga;
 import br.com.victor.automacao.services.ScraperSite;
 import org.jsoup.Connection;
@@ -59,10 +58,8 @@ public class Main {
             if (!filaDeVagasParaEnviar.isEmpty()) {
                 Vaga vagaParaEnviar = filaDeVagasParaEnviar.poll();
 
-                if (vagaParaEnviar != null && vagaParaEnviar.getLink() != null && !vagaParaEnviar.getLink()
-                        .isEmpty()) {
-                    System.out.println("\n[" + agora() + "] Enviando próxima vaga da fila para o Discord: "
-                            + vagaParaEnviar.getTitle());
+                if (vagaParaEnviar != null && vagaParaEnviar.getLink() != null && !vagaParaEnviar.getLink().isEmpty()) {
+                    System.out.println("\n[" + agora() + "] Enviando próxima vaga da fila para o Discord: " + vagaParaEnviar.getTitle());
                     notifier.notificar(vagaParaEnviar);
                     salvarLinkEnviado(vagaParaEnviar.getLink()); // Salva na "memória"
 
@@ -103,52 +100,50 @@ public class Main {
                 "Estágio em Desenvolvimento Mobile",
                 "Estágio em Tecnologia da Informação",
                 "Estágio em Full Stack Development",
-                "Estagio em Front-End",
-                "Desenvolvedor Back-End",
-                "Desenvolvedor Java",
-
-
                 "Trainee em Desenvolvimento de Software",
-                "Trainee Desenvolvedor Java",
-                "Trainee Back-End Developer",
-                "Trainee em Engenharia de Software",
-                "Trainee em Infraestrutura de TI",
-                "Trainee em Cloud Computing",
-                "Trainee em Análise de Sistemas",
-                "Trainee Full Stack Developer",
-                "Trainee em Cybersegurança",
-                "Trainee em Ciência de Dados",
-                "Trainee em Automação e QA",
-                "Trainee em Desenvolvimento de Aplicações Web",
-                "Trainee em TI");
+                "Trainee Desenvolvedor Java"
+                // Adicione mais cargos aqui
+        );
 
-        List<ScraperSite> scrapers = new ArrayList<>();
-        scrapers.add(new RemotarScraper());
-        scrapers.add(new GupyScraper());
-
+        ScraperSite gupyScraper = new GupyScraper();
         List<Vaga> todasAsVagas = new ArrayList<>();
 
         for (String cargo : cargos) {
-            System.out.println("Buscando por: '" + cargo + "'");
+            String url = gupyScraper.buscarUrl(cargo, "");
+            if (url == null || url.isEmpty()) continue;
 
-            for (ScraperSite scraper : scrapers) {
-                String url = scraper.buscarUrl(cargo, "");
-                if (url == null || url.isEmpty()) continue;
-                try {
-                    Connection.Response response = Jsoup.connect(url).userAgent("Mozilla/5.0")
-                            .ignoreContentType(true).execute();
-                    String jsonResponse = response.body();
+            try {
+                Connection.Response response = Jsoup.connect(url)
+                        .userAgent("Mozilla/5.0")
+                        .ignoreContentType(true)
+                        .timeout(30000) // Timeout de 30 segundos
+                        .execute();
 
-                    List<Vaga> vagasDoSite = scraper.extrairVagas(jsonResponse);
+                int statusCode = response.statusCode();
+                String jsonResponse = response.body();
+
+                System.out.println("\n----------------------------------------------------");
+                System.out.println("Buscando por: '" + cargo + "'");
+                System.out.println("URL: " + url);
+                System.out.println("Status da Resposta HTTP: " + statusCode);
+                System.out.println("JSON Recebido (primeiros 500 caracteres): " +
+                        (jsonResponse.length() > 500 ? jsonResponse.substring(0, 500) + "..." : jsonResponse));
+                System.out.println("----------------------------------------------------");
+
+                if (statusCode == 200) {
+                    List<Vaga> vagasDoSite = gupyScraper.extrairVagas(jsonResponse);
                     if (vagasDoSite != null && !vagasDoSite.isEmpty()) {
-                        System.out.println("\n>>>>>> Vagas recebidas antes do filtro: " + vagasDoSite.size());
+                        System.out.println(">>>>>> Vagas recebidas antes do filtro: " + vagasDoSite.size());
                         List<Vaga> vagasFiltradas = filtrarVagas(vagasDoSite, cargo);
-                        System.out.println("\n>>>>>> Vagas que passaram no filtro: " + vagasFiltradas.size());
+                        System.out.println(">>>>>> Vagas que passaram no filtro: " + vagasFiltradas.size());
                         todasAsVagas.addAll(vagasFiltradas);
                     }
-                } catch (IOException e) {
-                    System.err.println("Erro ao buscar vagas para " + cargo + ": " + e.getMessage());
+                } else {
+                    System.err.println("Erro: A API retornou um status diferente de 200. Não foi possível processar as vagas.");
                 }
+
+            } catch (IOException e) {
+                System.err.println("Erro de IO ao buscar vagas para " + cargo + ": " + e.getMessage());
             }
         }
         return new ArrayList<>(new LinkedHashSet<>(todasAsVagas));
@@ -159,9 +154,7 @@ public class Main {
         if (texto == null) {
             return "";
         }
-
         String textoNormalizado = texto.toLowerCase();
-
         textoNormalizado = Normalizer.normalize(textoNormalizado, Normalizer.Form.NFD);
         textoNormalizado = textoNormalizado.replaceAll("\\p{InCombiningDiacriticalMarks}", "");
         return textoNormalizado;
@@ -169,55 +162,47 @@ public class Main {
 
     public static List<Vaga> filtrarVagas(List<Vaga> vagas, String cargo) {
         List<Vaga> vagasFiltradas = new ArrayList<>();
-
-        List<String> nivelSenioridadeExcluidas = Arrays.asList("senior", "pleno", "lead", "especialista", "analista", "junior");
-
-        List<String> palavrasIgnoradas = Arrays.asList("em", "de", "da", "do", "para", "a", "o");
-
-        String[] palavrasChave = Arrays.stream(normalizarString(cargo).split(" ")).
-                filter(palavra -> !palavrasIgnoradas.contains(palavra) && !palavra.equals("estagio") || !palavra.equals("Estagio") && !palavra.equals("trainee") || !palavra.equals("Trainee")).
-                toArray(String[]::new);
-
+        List<String> senioridadesExcluidas = Arrays.asList("senior", "pleno", "lead", "especialista", "analista", "junior");
+        List<String> palavrasIgnoradas = Arrays.asList("em", "de", "da", "do", "para", "a", "o", "e");
+        String[] palavrasChaveArea = Arrays.stream(normalizarString(cargo).split(" "))
+                .filter(palavra -> !palavrasIgnoradas.contains(palavra) && !palavra.equals("estagio") && !palavra.equals("trainee"))
+                .toArray(String[]::new);
 
         for (Vaga vaga : vagas) {
-            if (vaga.getTitle() == null || vaga.getLink() == null || vaga.getLink().isEmpty()) continue;
-
-            // Normaliza o título da vaga antes de comparar
+            if (vaga.getTitle() == null || vaga.getLink() == null || vaga.getLink().isEmpty()) {
+                continue;
+            }
             String tituloVaga = normalizarString(vaga.getTitle());
-
-
+            if (!tituloVaga.contains("estagio") && !tituloVaga.contains("trainee")) {
+                continue;
+            }
             boolean temSenioridadeIndesejada = false;
-            for (String senioridade : nivelSenioridadeExcluidas) {
-                if (!tituloVaga.contains(senioridade)) {
+            for (String senioridade : senioridadesExcluidas) {
+                if (tituloVaga.contains(senioridade)) {
                     temSenioridadeIndesejada = true;
                     break;
                 }
             }
-
             if (temSenioridadeIndesejada) {
                 continue;
             }
-
-            if (palavrasChave.length == 0){
+            if (palavrasChaveArea.length == 0) {
                 vagasFiltradas.add(vaga);
                 continue;
             }
             int palavrasCorrespondentes = 0;
-            for (String palavra : palavrasChave){
-                if (tituloVaga.contains(palavra)){
+            for (String palavra : palavrasChaveArea) {
+                if (tituloVaga.contains(palavra)) {
                     palavrasCorrespondentes++;
                 }
             }
-            int minimodePalavra = (palavrasChave.length > 1) ? palavrasChave.length - 1 : 1;
-
-            if (palavrasCorrespondentes >= minimodePalavra){
+            int minimoDePalavrasArea = (palavrasChaveArea.length > 1) ? palavrasChaveArea.length - 1 : 1;
+            if (palavrasCorrespondentes >= minimoDePalavrasArea) {
                 vagasFiltradas.add(vaga);
             }
         }
         return vagasFiltradas;
     }
-
-
 
     private static Set<String> carregarLinksEnviados() {
         try {
