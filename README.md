@@ -1,4 +1,4 @@
-# Automação de Vagas de Estágio
+# Robotic Process Automation (RPA) para Data Scraping
 
 ![Java](https://img.shields.io/badge/Java-21-blue)
 ![Maven](https://img.shields.io/badge/Maven-3.9-red)
